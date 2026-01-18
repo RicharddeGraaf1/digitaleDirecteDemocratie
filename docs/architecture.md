@@ -1,73 +1,97 @@
-# Architecture Proposal: Digitale Directe Democratie
+# Architecture Proposal: Democratie Digitaal
 
-This document outlines the technical architecture for a new voting aid platform that integrates knowledge testing, topic-based analysis, and weighted voting.
+This document outlines the technical architecture for a voting aid platform that integrates knowledge testing, topic-based analysis, and weighted voting.
 
 ## 1. System Overview
-The goal is to build a modular web application that extends the traditional "Stemwijzer" concept. The key differentiator is the "Knowledge Layer" which qualifies votes based on the voter's understanding of the specific topic.
+The goal is to build a modular web application that extends the traditional "Stemwijzer" concept. The key differentiator is the **Knowledge Layer** which qualifies votes based on the voter's understanding of the specific topic.
 
 ### Key Pillars
 1.  **The Compass (Stemhulp)**: The core voting interface.
 2.  **The Knowledge Engine**: Integrated testing mechanisms to gauge voter expertise.
 3.  **The Proxy System**: Ability to delegate votes to political parties (blind trust).
 4.  **The Analytics Hub**: Comparative analysis of "Popular Opinion" vs. "Informed Opinion".
+5.  **Authentication & Onboarding**: User login and topic selection before voting.
+6.  **Admin CMS**: Content management for topics, statements, and knowledge questions.
 
 ## 2. Technology Stack
 
 ### Frontend
-*   **Framework**: **Next.js 14+** (App Router). This provides server-side rendering for SEO, fast initial loads, and a robust routing system for the different modules.
-*   **Language**: **TypeScript** for type safety and maintainability.
-*   **Styling**: **Vanilla CSS / CSS Modules**. Focused on high-end, premium aesthetics (Glassmorphism, smooth animations) without the constraints of utility classes, ensuring a unique visual identity.
-*   **State Management**: React Context / Hooks for local state; potential use of Zustand if global state becomes complex.
+*   **Framework**: **Next.js 16** (App Router).
+*   **Language**: **TypeScript** for type safety.
+*   **Styling**: **Tailwind CSS** with custom design tokens.
+*   **State Management**: React Context / Hooks; Zustand for complex global state.
 
 ### Backend & Database
-*   **API**: **Next.js Server Actions / API Routes**. This keeps the architecture simple (Monolithic) and deployment easy on Vercel.
-*   **Database**: **PostgreSQL**. A relational database is essential for the structured data (Statements, Topics, Votes, Parties).
-*   **ORM**: **Prisma**. For type-safe database access and easy migration management.
+*   **API**: **Next.js Server Actions / API Routes**.
+*   **Database**: **PostgreSQL** (via Vercel Postgres or Supabase).
+*   **ORM**: **Prisma** for type-safe database access.
+*   **Authentication**: **NextAuth.js** for flexible auth providers.
 
 ### External Services / Integration
-*   **Data Scraping**: Custom Node.js scripts (using Cheerio or Puppeteer) to ingest data from existing repositories (e.g., open-source Stemwijzer scrapers) and map them to our schema.
+*   **Stemwijzer Data**: Import from [afvanwoudenberg/stemwijzer](https://github.com/afvanwoudenberg/stemwijzer) JSON format containing 30 statements with party positions.
 
 ## 3. Data Model (Conceptual ERD)
 
-### Core Entities
 ```mermaid
 erDiagram
+    USER ||--o{ SESSION : "has"
+    USER ||--o{ USER_TOPIC_PREFERENCE : "selects"
+    
     TOPIC ||--|{ STATEMENT : "categorizes"
     TOPIC ||--|{ KNOWLEDGE_QUESTION : "has"
+    TOPIC ||--|{ USER_TOPIC_PREFERENCE : "selected by"
+    
     STATEMENT ||--|{ KNOWLEDGE_QUESTION : "has specific"
     STATEMENT ||--|{ PARTY_STANCE : "has opinion"
     PARTY ||--|{ PARTY_STANCE : "takes"
     
-    VOTER_SESSION ||--|{ VOTE : "casts"
-    VOTER_SESSION ||--|{ KNOWLEDGE_RESULT : "answers"
+    SESSION ||--|{ VOTE : "casts"
+    SESSION ||--|{ KNOWLEDGE_RESULT : "answers"
     
     STATEMENT ||--|{ VOTE : "receives"
     PARTY ||--o{ VOTE : "delegated to"
     KNOWLEDGE_QUESTION ||--|{ KNOWLEDGE_RESULT : "graded"
 
+    USER {
+        string id PK
+        string email
+        string name
+        string role "user/admin"
+        datetime createdAt
+    }
+
     TOPIC {
         int id PK
         string name
         string description
+        string icon
+    }
+
+    USER_TOPIC_PREFERENCE {
+        string usedId FK
+        int topicId FK
+        boolean selected
     }
 
     STATEMENT {
         int id PK
         int topicId FK
+        string theme "from Stemwijzer"
         string text
+        string info "background info"
     }
 
     PARTY {
         int id PK
         string name
-        string description
+        string shortName
         string logoUrl
     }
 
     PARTY_STANCE {
         int partyId FK
         int statementId FK
-        string opinion "Agree/Disagree/None"
+        string position "Eens/Oneens/Geen"
         string explanation
     }
 
@@ -78,11 +102,12 @@ erDiagram
         string questionText
         json options
         int correctOptionIndex
-        int weightDifficulty
+        int difficulty
     }
 
-    VOTER_SESSION {
+    SESSION {
         int id PK
+        string userId FK
         datetime startedAt
         datetime completedAt
     }
@@ -90,7 +115,7 @@ erDiagram
     VOTE {
         int sessionId FK
         int statementId FK
-        string userOpinion "Agree/Disagree/Skip"
+        string userOpinion "Eens/Oneens/Geen mening/Skip"
         int delegatedToPartyId FK "Nullable"
     }
 
@@ -103,36 +128,80 @@ erDiagram
 
 ## 4. Functional Modules
 
-### Module A: The Scraper & CMS (Admin)
-*   **Function**: Populates the database.
-*   **Features**:
-    *   Import tool to fetch current election statements.
-    *   **Enrichment Interface**: A dashboard where the admin can:
-        *   Assign a `Topic` to a `Statement`.
-        *   Create `KnowledgeQuestions` for that specific statement/topic.
+### Module A: Authentication & Onboarding
+*   **Default Accounts**:
+    *   **User**: email: `burger`, password: `Burger` (Role: USER)
+    *   **Admin**: email: `admin`, password: `Admin` (Role: ADMIN)
+*   **Login**: NextAuth Credentials provider for internal accounts.
+*   **Onboarding Flow**:
+    1.  Welcome screen with app explanation.
+    2.  "Start met het geven van je mening" button.
+    3.  **Topic Selector**: Multi-select with all topics pre-checked.
+    4.  Proceed to voting.
 
 ### Module B: The Voter Interface (Client)
 *   **UX Flow**:
-    1.  **Onboarding**: Brief explanation of the concept.
-    2.  **The Loop** (Repeats for ~30 statements):
-        *   **Step 1: Check**: Present 1-3 multiple choice `KnowledgeQuestions` related to the upcoming topic/statement.
-        *   **Step 2: Statement**: Show the statement.
-        *   **Step 3: Action**:
-            *   *Option A*: Vote Agree/Disagree/Neutral.
-            *   *Option B*: "I don't know, I trust [Party X]" (Proxy Vote).
-    3.  **Results**: Present the match.
+    1.  **Topic Selection**: Choose which topics to vote on (filtered experience).
+    2.  **The Loop** (per selected topic's statements):
+        *   **Step 1**: Knowledge question(s) about the topic.
+        *   **Step 2**: Show the statement.
+        *   **Step 3**: Vote (Eens/Oneens/Geen mening) or Proxy.
+    3.  **Results**: Match with parties.
 
-### Module C: Analytics & weighting (The "Insight" Engine)
-*   **Function**: Calculates the results.
-*   **Logic**:
-    *   *Basic Score*: Standard matching (like Stemwijzer).
-    *   *Topic Expertise Score*: Calculates the user's `% correct` per Topic.
-    *   *Weighted Analysis*: "Users with >80% knowledge on this topic voted X, whereas the general population voted Y."
+### Module C: Admin CMS
+*   **Features**:
+    *   **Topics Management**: CRUD for topics.
+    *   **Statements Management**: 
+        *   Import from Stemwijzer JSON.
+        *   Manual CRUD per topic.
+    *   **Knowledge Questions**:
+        *   Create/edit questions per topic or statement.
+        *   Set correct answer and difficulty.
+    *   **Parties**: Manage party list and logos.
+    *   **Statistics**: Dashboard with user activity, topic popularity, and knowledge levels.
+*   **Access**: Protected route, admin role only.
+
+### Module D: Stemwijzer Integration
+*   **Import Script**: Parse `tweedekamer2025.json` and populate:
+    *   Statements (theme, title, info).
+    *   Parties (extract unique party names).
+    *   Party Stances (position + explanation per party per statement).
+*   **Admin Enrichment**: Add topics and knowledge questions to imported data.
+
+### Module E: Analytics & Weighting
+*   **Basic Score**: Standard Stemwijzer-style matching.
+*   **Knowledge Score**: Per-topic expertise percentage.
+*   **Weighted Analysis**: Compare "informed opinion" vs "general opinion".
 
 ## 5. Implementation Roadmap
-1.  **Setup**: Initialize Next.js, Prisma, Postgres.
-2.  **Data Layer**: Define schema, create seed script (mock data).
-3.  **Scraper Prototype**: Build a script to fetch data from a known source.
-4.  **Admin UI**: Build the enriching interface to add Questions/Topics.
-5.  **Voter UI**: Build the main interaction loop (high aesthetic focus).
-6.  **Analytics**: Implement the weighted scoring logic.
+
+### Phase 1: Foundation ✅
+- [x] Initialize Next.js project
+- [x] Setup design system (Tailwind + CSS tokens)
+- [x] Build core UI components (Header, StatementCard, KnowledgeCard)
+- [x] Implement basic voting flow with mock data
+
+### Phase 2: Authentication & Data Layer
+- [ ] Setup Prisma + PostgreSQL
+- [ ] Implement NextAuth.js authentication
+- [ ] Create database schema (migrations)
+- [ ] Build Stemwijzer JSON import script
+
+### Phase 3: Onboarding Flow
+- [ ] Login/Register pages
+- [ ] Welcome/onboarding screen
+- [ ] Topic selector component
+- [ ] Session management
+
+### Phase 4: Admin CMS
+- [ ] Admin layout & navigation
+- [ ] Topics CRUD interface
+- [ ] Statements management (import + manual)
+- [ ] Knowledge questions editor
+- [ ] Parties management
+
+### Phase 5: Analytics & Polish
+- [ ] Results calculation engine
+- [ ] Results display page
+- [ ] Weighted analysis views
+- [ ] Performance optimization
