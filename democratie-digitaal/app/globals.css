@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+:root {
+  /* Brand Colors */
+  --brand-blue: #1a5fb4;
+  --brand-blue-dark: #134084;
+  --brand-blue-light: #3584e4;
+  
+  /* Signal Colors */
+  --signal-green: #2ec27e;
+  --signal-green-border: #26a269;
+  --signal-red: #e01b24;
+  --signal-red-border: #c01c28;
+  --signal-grey: #77767b;
+  --signal-grey-border: #5e5c64;
+  
+  /* Neutrals */
+  --background: #f5f7fa;
+  --card-background: #ffffff;
+  --foreground: #1a1a1a;
+  --text-muted: #5e5c64;
+  
+  /* Shadows */
+  --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-blue-dark: var(--brand-blue-dark);
+  --color-signal-green: var(--signal-green);
+  --color-signal-red: var(--signal-red);
+  --color-signal-grey: var(--signal-grey);
+  --font-sans: var(--font-geist-sans);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Card Component Base */
+.card {
+  background: var(--card-background);
+  border-radius: 16px;
+  box-shadow: var(--card-shadow);
+  padding: 2rem;
+}
+
+/* Vote Button Base */
+.vote-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 1rem;
+  border: 2px solid;
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.vote-btn:hover {
+  transform: translateY(-1px);
+}
+
+.vote-btn--disagree {
+  color: var(--signal-red);
+  border-color: var(--signal-red-border);
+}
+
+.vote-btn--disagree:hover {
+  background: var(--signal-red);
+  color: white;
+}
+
+.vote-btn--neutral {
+  color: var(--signal-grey);
+  border-color: var(--signal-grey-border);
+}
+
+.vote-btn--neutral:hover {
+  background: var(--signal-grey);
+  color: white;
+}
+
+.vote-btn--agree {
+  color: var(--signal-green);
+  border-color: var(--signal-green-border);
+}
+
+.vote-btn--agree:hover {
+  background: var(--signal-green);
+  color: white;
+}
+
+/* Primary Button */
+.btn-primary {
+  background: var(--brand-blue);
+  color: white;
+  border: none;
+  padding: 0.875rem 2rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-primary:hover {
+  background: var(--brand-blue-dark);
+}
+
+/* Radio Option */
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.radio-option:hover {
+  border-color: var(--brand-blue-light);
+}
+
+.radio-option--selected {
+  border-color: var(--brand-blue);
+  background: #f0f7ff;
+}
