@@ -156,6 +156,7 @@ erDiagram
         *   Manual CRUD per topic.
     *   **Knowledge Questions**:
         *   Create/edit questions per topic or statement.
+        *   **AI Suggestions**: Button to generate 3 initial knowledge questions using an LLM (e.g., Gemini API) based on statement text.
         *   Set correct answer and difficulty.
     *   **Parties**: Manage party list and logos.
     *   **Statistics**: Dashboard with user activity, topic popularity, and knowledge levels.
