@@ -1,0 +1,194 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions          Session[]
+  topicPreferences  UserTopicPreference[]
+  accounts          Account[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// ============================================
+// VOTING SESSION
+// ============================================
+
+model Session {
+  id          String    @id @default(cuid())
+  userId      String
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes             Vote[]
+  knowledgeResults  KnowledgeResult[]
+}
+
+// ============================================
+// TOPICS & PREFERENCES
+// ============================================
+
+model Topic {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+  icon        String?
+
+  statements          Statement[]
+  knowledgeQuestions  KnowledgeQuestion[]
+  userPreferences     UserTopicPreference[]
+}
+
+model UserTopicPreference {
+  userId   String
+  topicId  Int
+  selected Boolean @default(true)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@id([userId, topicId])
+}
+
+// ============================================
+// STATEMENTS & PARTIES
+// ============================================
+
+model Statement {
+  id      Int     @id @default(autoincrement())
+  topicId Int?
+  theme   String  // Original theme from Stemwijzer
+  text    String  // The statement itself
+  info    String? @db.Text // Background information
+
+  topic              Topic?              @relation(fields: [topicId], references: [id])
+  partyStances       PartyStance[]
+  knowledgeQuestions KnowledgeQuestion[]
+  votes              Vote[]
+}
+
+model Party {
+  id        Int     @id @default(autoincrement())
+  name      String  @unique
+  shortName String?
+  logoUrl   String?
+
+  stances       PartyStance[]
+  delegatedVotes Vote[]
+}
+
+model PartyStance {
+  partyId     Int
+  statementId Int
+  position    Position
+  explanation String?  @db.Text
+
+  party     Party     @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  statement Statement @relation(fields: [statementId], references: [id], onDelete: Cascade)
+
+  @@id([partyId, statementId])
+}
+
+enum Position {
+  EENS
+  ONEENS
+  GEEN
+}
+
+// ============================================
+// KNOWLEDGE QUESTIONS
+// ============================================
+
+model KnowledgeQuestion {
+  id                 Int     @id @default(autoincrement())
+  statementId        Int?
+  topicId            Int?
+  questionText       String
+  options            Json    // Array of option strings
+  correctOptionIndex Int
+  difficulty         Int     @default(1) // 1-3
+
+  statement Statement? @relation(fields: [statementId], references: [id], onDelete: SetNull)
+  topic     Topic?     @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  results   KnowledgeResult[]
+}
+
+model KnowledgeResult {
+  id         Int     @id @default(autoincrement())
+  sessionId  String
+  questionId Int
+  isCorrect  Boolean
+  answeredAt DateTime @default(now())
+
+  session  Session           @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question KnowledgeQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, questionId])
+}
+
+// ============================================
+// VOTES
+// ============================================
+
+model Vote {
+  id                 Int       @id @default(autoincrement())
+  sessionId          String
+  statementId        Int
+  userOpinion        Opinion
+  delegatedToPartyId Int?
+  votedAt            DateTime  @default(now())
+
+  session          Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  statement        Statement @relation(fields: [statementId], references: [id], onDelete: Cascade)
+  delegatedToParty Party?    @relation(fields: [delegatedToPartyId], references: [id])
+
+  @@unique([sessionId, statementId])
+}
+
+enum Opinion {
+  EENS
+  ONEENS
+  GEEN_MENING
+  SKIP
+}
