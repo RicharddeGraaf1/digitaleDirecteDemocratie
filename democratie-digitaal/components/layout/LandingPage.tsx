@@ -54,12 +54,13 @@ export default function LandingPage() {
                     <div className="space-y-6">
                         <h1 className="text-5xl font-black text-gray-900 leading-tight tracking-tighter">
                             Democratie <br />
-                            <span className="text-[var(--brand-blue)]">zoals het bedoeld is.</span>
+                            <span className="text-[var(--brand-blue)]">hoe het bedoeld is.</span>
                         </h1>
                         <p className="text-xl text-gray-600 leading-relaxed">
-                            Democratie Digitaal laat je actuele stellingen beoordelen, test
-                            je kennis met korte vragen en laat zien hoe jouw keuzes zich
-                            verhouden tot partijen en onderwerpen.
+                            Democratie Digitaal combineert het geven van je mening met het toetsen
+                            hoeveel kennis je hebt over de onderwerpen. Hierdoor kan er beleid gemaakt
+                            worden op basis van de meningen en expertise vanuit de Nederlandse kiezer
+                            in plaats van compromissen in achterkamertjes.
                         </p>
                         <div className="flex gap-4 pt-4">
                             <div className="flex -space-x-3">
