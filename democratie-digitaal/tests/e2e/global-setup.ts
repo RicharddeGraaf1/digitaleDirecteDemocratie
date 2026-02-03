@@ -18,5 +18,6 @@ export default async function globalSetup() {
         );
     }
 
+    execSync("npx prisma db push --skip-generate", { stdio: "inherit" });
     execSync("node scripts/seed-e2e.js", { stdio: "inherit" });
 }

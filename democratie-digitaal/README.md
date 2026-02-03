@@ -55,6 +55,8 @@ Optional flags:
 - `E2E_SKIP_SEED=1` skips the seed script.
 - `E2E_BASE_URL=https://your-env.example` runs against an existing deployment.
 
+The e2e runner applies `prisma db push` automatically before seeding.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
