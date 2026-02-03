@@ -25,37 +25,13 @@ export default function LandingPage() {
 
     return (
         <div className="min-h-[calc(100vh-72px)] bg-gray-50 flex items-center justify-center p-6">
-            <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                {/* Left side: Hero Text */}
-                <div className="space-y-6">
-                    <h1 className="text-5xl font-black text-gray-900 leading-tight tracking-tighter">
-                        Democratie <br />
-                        <span className="text-[var(--brand-blue)]">zoals het bedoeld is.</span>
-                    </h1>
-                    <p className="text-xl text-gray-600 leading-relaxed">
-                        Democratie Digitaal laat je actuele stellingen beoordelen, test
-                        je kennis met korte vragen en laat zien hoe jouw keuzes zich
-                        verhouden tot partijen en onderwerpen.
-                    </p>
-                    <div className="flex gap-4 pt-4">
-                        <div className="flex -space-x-3">
-                            {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200" />
-                            ))}
-                        </div>
-                        <p className="text-sm text-gray-500 font-medium flex items-center">
-                            Sluit je aan bij vragende burgers
-                        </p>
-                    </div>
-                </div>
-
-                {/* Right side: Tabs & Content */}
-                <div className="card shadow-2xl p-0 overflow-hidden bg-white border-none">
-                    <div className="flex border-b border-gray-100">
+            <div className="max-w-5xl w-full space-y-8">
+                <div className="flex justify-center md:justify-end">
+                    <div className="inline-flex rounded-full border border-gray-200 bg-white shadow-sm overflow-hidden">
                         <button
                             onClick={() => setActiveTab("start")}
-                            className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-all ${activeTab === "start"
-                                ? "text-[var(--brand-blue)] border-b-2 border-[var(--brand-blue)]"
+                            className={`px-6 py-2 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === "start"
+                                ? "text-[var(--brand-blue)] bg-blue-50"
                                 : "text-gray-400 hover:text-gray-600"
                                 }`}
                         >
@@ -63,17 +39,42 @@ export default function LandingPage() {
                         </button>
                         <button
                             onClick={() => setActiveTab("why")}
-                            className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-all ${activeTab === "why"
-                                ? "text-[var(--brand-blue)] border-b-2 border-[var(--brand-blue)]"
+                            className={`px-6 py-2 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === "why"
+                                ? "text-[var(--brand-blue)] bg-blue-50"
                                 : "text-gray-400 hover:text-gray-600"
                                 }`}
                         >
                             Waarom DD?
                         </button>
                     </div>
+                </div>
 
-                    <div className="p-8">
-                        {activeTab === "start" ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+                    {/* Left side: Hero Text */}
+                    <div className="space-y-6">
+                        <h1 className="text-5xl font-black text-gray-900 leading-tight tracking-tighter">
+                            Democratie <br />
+                            <span className="text-[var(--brand-blue)]">zoals het bedoeld is.</span>
+                        </h1>
+                        <p className="text-xl text-gray-600 leading-relaxed">
+                            Democratie Digitaal laat je actuele stellingen beoordelen, test
+                            je kennis met korte vragen en laat zien hoe jouw keuzes zich
+                            verhouden tot partijen en onderwerpen.
+                        </p>
+                        <div className="flex gap-4 pt-4">
+                            <div className="flex -space-x-3">
+                                {[1, 2, 3, 4].map((i) => (
+                                    <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200" />
+                                ))}
+                            </div>
+                            <p className="text-sm text-gray-500 font-medium flex items-center">
+                                Sluit je aan bij vragende burgers
+                            </p>
+                        </div>
+                    </div>
+
+                    {activeTab === "start" ? (
+                        <div className="card shadow-2xl bg-white border-none">
                             <div className="space-y-6 animate-in fade-in duration-500">
                                 <form onSubmit={handleLogin} className="space-y-4">
                                     {error && <p className="text-red-500 text-sm bg-red-50 p-3 rounded-lg border border-red-100">{error}</p>}
@@ -113,7 +114,9 @@ export default function LandingPage() {
                                     Doorgaan als gast &rarr;
                                 </Link>
                             </div>
-                        ) : (
+                        </div>
+                    ) : (
+                        <div className="card shadow-2xl bg-white border-none">
                             <div className="space-y-6 animate-in fade-in duration-500 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                                 <section className="space-y-4">
                                     <h3 className="text-lg font-bold text-gray-900">Onze Visie op Moderne Democratie</h3>
@@ -158,8 +161,8 @@ export default function LandingPage() {
                                     </p>
                                 </div>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
