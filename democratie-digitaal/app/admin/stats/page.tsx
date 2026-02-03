@@ -4,12 +4,21 @@ export const dynamic = "force-dynamic";
 
 export default async function StatsPage() {
     // Fetch real data from DB
-    const totalVotes = await prisma.vote.count();
-    const totalUsers = await prisma.user.count();
-    const totalKnowledgeResults = await prisma.knowledgeResult.count();
-    const correctKnowledgeResults = await prisma.knowledgeResult.count({
-        where: { isCorrect: true },
-    });
+    const [
+        totalVotes,
+        totalUsers,
+        totalKnowledgeResults,
+        correctKnowledgeResults,
+        totalStatements,
+        totalParties,
+    ] = await Promise.all([
+        prisma.vote.count(),
+        prisma.user.count(),
+        prisma.knowledgeResult.count(),
+        prisma.knowledgeResult.count({ where: { isCorrect: true } }),
+        prisma.statement.count(),
+        prisma.party.count(),
+    ]);
 
     const knowledgeAccuracy = totalKnowledgeResults > 0
         ? Math.round((correctKnowledgeResults / totalKnowledgeResults) * 100)
@@ -56,7 +65,7 @@ export default async function StatsPage() {
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-gray-900 border-l-4 border-[var(--brand-blue)] pl-4">
-                    Statistieken Overview
+                    Statistieken Overzicht
                 </h1>
                 <div className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm">
                     Live data van Vercel Postgres
@@ -64,11 +73,13 @@ export default async function StatsPage() {
             </div>
 
             {/* High Level Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <StatCard label="Totaal Stemmen" value={totalVotes.toString()} subValue="+12% vs vorige week" />
-                <StatCard label="Geregistreerde Burgers" value={totalUsers.toString()} subValue="Actieve sessies" />
-                <StatCard label="Kennis Accuracy" value={`${knowledgeAccuracy}%`} subValue="Gemiddelde score" />
-                <StatCard label="Toetsvragen Beantwoord" value={totalKnowledgeResults.toString()} subValue="Sinds import" />
+            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-6">
+                <StatCard label="Totaal Stemmen" value={totalVotes.toString()} subValue="totaal" />
+                <StatCard label="Geregistreerde Burgers" value={totalUsers.toString()} subValue="accounts" />
+                <StatCard label="Stellingen" value={totalStatements.toString()} subValue="in database" />
+                <StatCard label="Partijen" value={totalParties.toString()} subValue="geimporteerd" />
+                <StatCard label="Kennis Accuracy" value={`${knowledgeAccuracy}%`} subValue="gemiddelde score" />
+                <StatCard label="Toetsvragen Beantwoord" value={totalKnowledgeResults.toString()} subValue="resultaten" />
             </div>
 
             {/* Topic Breakdown */}
@@ -76,7 +87,7 @@ export default async function StatsPage() {
                 <div className="card">
                     <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg>
-                        Populairte Onderwerpen
+                        Populaire Onderwerpen
                     </h3>
                     <div className="space-y-6">
                         {topicStats.map((topic: any, i: number) => (
@@ -136,10 +147,11 @@ function StatCard({ label, value, subValue }: { label: string; value: string; su
             <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-black text-gray-900 leading-none">{value}</span>
             </div>
-            {subValue && <span className="text-[10px] text-green-500 font-bold mt-2 flex items-center gap-1">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
-                {subValue}
-            </span>}
+            {subValue && (
+                <span className="text-[10px] text-gray-400 font-semibold mt-2">
+                    {subValue}
+                </span>
+            )}
         </div>
     );
 }
