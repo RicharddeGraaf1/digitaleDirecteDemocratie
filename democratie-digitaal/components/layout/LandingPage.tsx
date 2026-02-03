@@ -109,7 +109,7 @@ export default function LandingPage() {
                                     <div className="flex-1 border-t border-gray-100" />
                                 </div>
                                 <Link
-                                    href="/voting"
+                                    href="/vote"
                                     className="block text-center text-sm font-bold text-gray-500 hover:text-[var(--brand-blue)] transition-colors"
                                 >
                                     Doorgaan als gast &rarr;
