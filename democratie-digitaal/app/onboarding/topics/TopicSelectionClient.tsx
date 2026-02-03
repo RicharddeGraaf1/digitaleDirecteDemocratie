@@ -34,7 +34,7 @@ export default function TopicSelectionClient({ topics, initialSelectedIds }: Top
     const handleProceed = async () => {
         if (!session?.user?.id) {
             // If not logged in, just proceed (fallback)
-            router.push("/");
+            router.push("/vote");
             return;
         }
 
@@ -43,7 +43,7 @@ export default function TopicSelectionClient({ topics, initialSelectedIds }: Top
         setIsSaving(false);
 
         if (result.success) {
-            router.push("/");
+            router.push("/vote");
         } else {
             alert("Er is iets misgegaan bij het opslaan van je voorkeuren.");
         }

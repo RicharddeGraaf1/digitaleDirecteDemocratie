@@ -4,26 +4,46 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+const errorMessages: Record<string, string> = {
+    CredentialsSignin: "Onjuiste gebruikersnaam of wachtwoord.",
+    default: "Inloggen mislukt. Probeer het opnieuw.",
+};
+
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError("");
+        setError(null);
+        setIsSubmitting(true);
 
-        const result = await signIn("credentials", {
-            email,
-            password,
-            redirect: false,
-        });
+        try {
+            const result = await signIn("credentials", {
+                email: email.trim(),
+                password,
+                redirect: false,
+            });
 
-        if (result?.error) {
-            setError("Ongeldige inloggegevens");
-        } else {
+            if (!result) {
+                setError(errorMessages.default);
+                return;
+            }
+
+            if (result.error) {
+                setError(errorMessages[result.error] ?? errorMessages.default);
+                return;
+            }
+
             router.push("/onboarding");
+        } catch (err) {
+            console.error("Login error:", err);
+            setError(errorMessages.default);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -41,15 +61,16 @@ export default function LoginPage() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            E-mailadres
+                            Gebruikersnaam of e-mailadres
                         </label>
                         <input
-                            type="email"
+                            type="text"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent outline-none"
-                            placeholder="naam@voorbeeld.nl"
+                            placeholder="admin of naam@voorbeeld.nl"
                             required
+                            autoComplete="username"
                         />
                     </div>
 
@@ -63,11 +84,16 @@ export default function LoginPage() {
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent outline-none"
                             required
+                            autoComplete="current-password"
                         />
                     </div>
 
-                    <button type="submit" className="btn-primary w-full mt-4">
-                        Inloggen
+                    <button
+                        type="submit"
+                        className="btn-primary w-full mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? "Bezig met inloggen..." : "Inloggen"}
                     </button>
                 </form>
 
