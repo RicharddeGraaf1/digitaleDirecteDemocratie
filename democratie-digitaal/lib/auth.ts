@@ -75,9 +75,6 @@ export const authOptions: NextAuthOptions = {
         signIn: "/login",
     },
     events: {
-        error(message) {
-            console.error("Auth event error:", message);
-        },
         signIn({ user, isNewUser }) {
             console.info("Auth sign-in:", {
                 userId: user.id,
