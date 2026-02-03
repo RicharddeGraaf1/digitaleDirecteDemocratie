@@ -29,12 +29,13 @@ export default function LandingPage() {
                 {/* Left side: Hero Text */}
                 <div className="space-y-6">
                     <h1 className="text-5xl font-black text-gray-900 leading-tight tracking-tighter">
-                        Geef je mening, <br />
-                        <span className="text-[var(--brand-blue)]">test je kennis.</span>
+                        Democratie <br />
+                        <span className="text-[var(--brand-blue)]">zoals het bedoeld is.</span>
                     </h1>
                     <p className="text-xl text-gray-600 leading-relaxed">
-                        Democratie Digitaal combineert een klassieke stemhulp
-                        met slimme kennistoetsing. Ontdek hoe goed je de thema's echt kent.
+                        Democratie Digitaal laat je actuele stellingen beoordelen, test
+                        je kennis met korte vragen en laat zien hoe jouw keuzes zich
+                        verhouden tot partijen en onderwerpen.
                     </p>
                     <div className="flex gap-4 pt-4">
                         <div className="flex -space-x-3">
