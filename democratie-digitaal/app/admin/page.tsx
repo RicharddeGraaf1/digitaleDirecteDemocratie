@@ -1,13 +1,21 @@
-"use client";
-
 import Link from "next/link";
+import prisma from "@/lib/prisma";
 
-export default function AdminDashboard() {
+export const dynamic = "force-dynamic";
+
+export default async function AdminDashboard() {
+    const [totalStatements, totalUsers, totalVotes, totalKnowledgeResults] = await Promise.all([
+        prisma.statement.count(),
+        prisma.user.count(),
+        prisma.vote.count(),
+        prisma.knowledgeResult.count(),
+    ]);
+
     const stats = [
-        { name: "Totaal Stellingen", value: "30", change: "+12%", changeType: "positive" },
-        { name: "Actieve Gebruikers", value: "1,284", change: "+18%", changeType: "positive" },
-        { name: "Stemmen Uitgebracht", value: "38,402", change: "+5%", changeType: "positive" },
-        { name: "Kennisvragen Beantwoord", value: "12,940", change: "+24%", changeType: "positive" },
+        { name: "Totaal Stellingen", value: totalStatements.toString(), note: "in database" },
+        { name: "Geregistreerde Gebruikers", value: totalUsers.toString(), note: "accounts" },
+        { name: "Stemmen Uitgebracht", value: totalVotes.toString(), note: "sessies" },
+        { name: "Kennisvragen Beantwoord", value: totalKnowledgeResults.toString(), note: "resultaten" },
     ];
 
     return (
@@ -21,10 +29,11 @@ export default function AdminDashboard() {
                         <p className="text-sm font-medium text-gray-500">{stat.name}</p>
                         <div className="flex items-baseline gap-2 mt-2">
                             <p className="text-3xl font-semibold text-gray-900">{stat.value}</p>
-                            <span className={`text-xs font-medium ${stat.changeType === "positive" ? "text-green-600" : "text-red-600"
-                                }`}>
-                                {stat.change}
-                            </span>
+                            {stat.note && (
+                                <span className="text-xs font-medium text-gray-400">
+                                    {stat.note}
+                                </span>
+                            )}
                         </div>
                     </div>
                 ))}
@@ -60,6 +69,8 @@ export default function AdminDashboard() {
                 <div className="card p-6">
                     <h2 className="text-lg font-semibold mb-4">Snelle Acties</h2>
                     <div className="grid grid-cols-2 gap-4">
+                        <QuickAction href="/admin/database" label="Database Vullen" />
+                        <QuickAction href="/admin/stats" label="Statistieken" />
                         <QuickAction href="/admin/statements" label="Nieuwe Stelling" />
                         <QuickAction href="/admin/questions" label="Nieuwe Kennisvraag" />
                         <QuickAction href="/admin/topics" label="Onderwerp Beheren" />
